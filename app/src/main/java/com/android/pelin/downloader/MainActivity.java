@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     public ArrayList<String> videoPool = null;
 
     public ArrayAdapter<Video> adapter = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,10 +55,6 @@ public class MainActivity extends AppCompatActivity {
         fillVideoPool();
 
         ArrayList<Video> videoList = new ArrayList<Video>();
-
-        //Video video = new Video("http://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_1mb.mp4");
-        //as.add("http://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_1mb.mp4");
-        //videoList.add(video);
 
         adapter = new ArrayAdapter<Video>(getBaseContext(),R.layout.layout_list_item,R.id.textView, videoList);
         lv.setAdapter(adapter);
@@ -76,15 +73,14 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else
                 {
-                    if(vid.getPercentage() != 0)
-                    {
-                        Snackbar.make(view, "İndiriliyor...", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-                    }
-                    else
+
+                    if(vid.getPercentage() ==0)
                     {
                         downloadVideo(vid);
                     }
+
+                    Snackbar.make(view, "İndiriliyor...", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
                 }
 
 
@@ -111,6 +107,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+
 
     private void fillVideoPool() { // filling video pool
         String[] videos = {
@@ -183,14 +181,6 @@ public class MainActivity extends AppCompatActivity {
                 InputStream input = new BufferedInputStream(url.openStream(),
                         8192);
 
-                // Output stream
-
-               /* File sdcard = Environment.getExternalStorageDirectory();
-                File dir = new File(sdcard.getAbsolutePath()+"/dir1/dir2");
-                dir.mkdirs();
-
-                File file = new File(dir,"abc.mp4");
-                OutputStream output = new FileOutputStream(file);*/
 
                 File sp = Environment.getExternalStorageDirectory();
 
@@ -207,12 +197,11 @@ public class MainActivity extends AppCompatActivity {
                     total += count;
                     // publishing the progress....
                     // After this onProgressUpdate will be called
-                    //publishProgress("" + (int) ((total * 100) / lenghtOfFile));
                     Log.e("Error: ", "TOTAL " + total);
 
                     video.setPercentage((int) ((total * 100) / lenghtOfFile));
-                    // writing data to file
                     publishProgress(video);
+                    // writing data to file
 
                     output.write(data, 0, count);
                 }
