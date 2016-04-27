@@ -48,22 +48,8 @@ public class Video {
 
     @Override
     public String toString() {
-        if(downloaded)
-        {
-            return name;
-        }
-        if(percentage > 0 && percentage < 101)
-        {
-            return name + " --- " + percentage;
-        }
-        else if(percentage < 0)
-        {
-            return name + "---" + "indiriliyor...";
-        }
-        else
-        {
-            return name;
-        }
+        return name;
+
     }
 
     public boolean isDownloaded() {
