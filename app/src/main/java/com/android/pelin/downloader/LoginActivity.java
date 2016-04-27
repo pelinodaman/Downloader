@@ -8,8 +8,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 public class LoginActivity extends AppCompatActivity {
-    public static final String PASSWORD = "1";
-    public static final String USERNAME = "Name";
+    public static final String PASSWORD = "14562335";
+    public static final String USERNAME = "admin";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
