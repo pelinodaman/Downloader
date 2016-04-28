@@ -1,21 +1,22 @@
 package com.android.pelin.downloader.Objects;
 
-import com.android.pelin.downloader.R;
-
 /**
  * Created by pelin on 27.04.2016.
  */
 public class Video {
+    private  String imageUrl;
     private String url="";
     private String name="";
     private String path = "";
+    private String imagePath = "";
     private int percentage = 0;
 
     private boolean downloaded = false ;
 
-    public Video(String url )
+    public Video(String url , String imageUrl )
     {
         this.url = url;
+        this.imageUrl = imageUrl;
         this.name = url.substring(url.lastIndexOf("/")+1);
     }
 
@@ -66,5 +67,21 @@ public class Video {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 }
