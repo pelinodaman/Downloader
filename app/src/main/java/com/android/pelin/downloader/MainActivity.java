@@ -38,8 +38,9 @@ public class MainActivity extends AppCompatActivity {
     public static final int pBarType = 0;
 
     public ArrayList<String> videoPool = null;
-
-    public ArrayAdapter<Video> adapter = null;
+    public ArrayList<String> imagePool = null;
+    ArrayList<Video> videoList = new ArrayList<Video>();
+    public VideoAdapter  customAdapter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,14 +52,15 @@ public class MainActivity extends AppCompatActivity {
         ListView lv = (ListView) findViewById(R.id.listView);
 
         videoPool = new ArrayList<String>();
+        imagePool = new ArrayList<String>();
 
         fillVideoPool();
+        fillImagePool();
 
-        ArrayList<Video> videoList = new ArrayList<Video>();
 
-        adapter = new ArrayAdapter<Video>(getBaseContext(),R.layout.layout_list_item,R.id.textView, videoList);
-        lv.setAdapter(adapter);
 
+        customAdapter = new VideoAdapter(getBaseContext(),videoList);
+        lv.setAdapter(customAdapter);
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -86,19 +88,16 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        //adapter.add("another row");
-        adapter.notifyDataSetChanged();
 
+        customAdapter.notifyDataSetChanged();
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(videoPool.size()>0)
                 {
-                    addNewVideo(adapter);
+                    addNewVideo(customAdapter);
                 }
-                /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();*/
             }
         });
 
@@ -122,25 +121,50 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void fillImagePool()
+    {
+        String[] images = {
+                "https://pbs.twimg.com/profile_images/378800000532546226/dbe5f0727b69487016ffd67a6689e75a.jpeg",
+                "http://g-ecx.images-amazon.com/images/G/01/img15/pet-products/small-tiles/23695_pets_vertical_store_dogs_small_tile_8._CB312176604_.jpg",
+                "http://www.hickerphoto.com/images/1024/endangered-animal-list_5406.jpg",
+                "http://cdn.earthporm.com/wp-content/uploads/2014/10/animal-family-portraits-2__880.jpg",
+                "https://elifyaaman.files.wordpress.com/2014/08/animal-hd-collection-329357.jpg"
+        };
+        imagePool.addAll(Arrays.asList(images));
+    }
+
     private void openVideo(Video vid) { // starts new activity for downloaded video
         Intent intent = new Intent(getBaseContext(), VideoPlayer.class);
         intent.putExtra("videoPath",vid.getPath());
         startActivity(intent);
     }
 
-    public void addNewVideo(ArrayAdapter adapter){ // adding new video to list
+    public void addNewVideo(VideoAdapter adapter){ // adding new video to list
         Random r = new Random();
         int randomIndex = r.nextInt(videoPool.size()) ;
 
-        Video video = new Video(videoPool.get(randomIndex));
+        Video video = new Video(videoPool.get(randomIndex) , imagePool.get(randomIndex));
         videoPool.remove(randomIndex);
+        imagePool.remove(randomIndex);
 
-        adapter.add(video);
+        downloadVideo(video);
+        videoList.add(video);
+        adapter.notifyDataSetChanged();
+
+
 
     }
 
     public void downloadVideo(Video video){
+        new DownloadImageFromURL().execute(video);
         new DownloadFileFromURL().execute(video);
+
+
+    }
+
+    public void notifyArrayAdapter()
+    {
+        customAdapter.notifyDataSetChanged();
     }
 
 
@@ -175,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
                 // this will be useful so that you can show a tipical 0-100%
                 // progress bar
                 int lenghtOfFile = conection.getContentLength();
-
+                //Log.e("LENGTH OF VIDEO" , lenghtOfFile+"")
 
                 // download the file
                 InputStream input = new BufferedInputStream(url.openStream(),
@@ -197,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
                     total += count;
                     // publishing the progress....
                     // After this onProgressUpdate will be called
-                    Log.e("Error: ", "TOTAL " + total);
+                    //Log.e("Error: ", "TOTAL " + total);
 
                     video.setPercentage((int) ((total * 100) / lenghtOfFile));
                     publishProgress(video);
@@ -248,5 +272,78 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+    }
+
+
+    class DownloadImageFromURL extends AsyncTask<Video,Video,Video> {
+
+        /**
+         * Before starting background thread Show Progress Bar Dialog
+         * */
+
+
+        /**
+         * Downloading file in background thread
+         * */
+        @Override
+        protected Video doInBackground(Video... params)  {
+            int count;
+            Video video = params[0];
+            try {
+
+                URL url = new URL(video.getImageUrl());
+
+                URLConnection conection = url.openConnection();
+                conection.connect();
+
+
+                // download the file
+                InputStream input = new BufferedInputStream(url.openStream(),
+                        8192);
+
+
+                File sp = Environment.getExternalStorageDirectory();
+
+                String imageName = video.getImageUrl().substring(video.getImageUrl().lastIndexOf("/")+1);
+                File newFile = new File(sp,imageName );
+
+                video.setImagePath(newFile.getAbsolutePath());
+
+                byte data[] = new byte[1024];
+                OutputStream output = new FileOutputStream( newFile);
+
+
+                while ((count = input.read(data)) != -1) {
+
+
+
+                    output.write(data, 0, count);
+                }
+
+                // flushing output
+                output.flush();
+
+                // closing streams
+                output.close();
+                input.close();
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                Log.e("ImageDownloadException" , e.getMessage());
+
+            }
+
+            return video;
+        }
+
+        @Override
+        protected void onPostExecute(Video video) {
+            super.onPostExecute(video);
+
+            notifyArrayAdapter();
+
+        }
     }
 }
